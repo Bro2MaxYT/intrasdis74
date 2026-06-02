@@ -26,6 +26,9 @@
                     <button onclick="openCalendar()" class="hover:bg-red-800 px-3 py-1.5 rounded text-sm font-medium transition flex items-center gap-1">
                         <span>📅</span> Calendrier
                     </button>
+                    <button onclick="openFormations()" class="hover:bg-red-800 px-3 py-1.5 rounded text-sm font-medium transition flex items-center gap-1">
+                        <span>🎓</span> Formations
+                    </button>
                 </div>
             </div>
             <div class="flex items-center space-x-4">
@@ -128,7 +131,7 @@
             
             <div class="bg-blue-50 border-l-4 border-blue-500 p-4 text-left max-w-md mx-auto inline-block">
                 <p class="text-sm text-blue-700 font-semibold mb-1">Portail Opérationnel :</p>
-                <p class="text-xs text-blue-900">Utilisez la barre de navigation supérieure pour accéder à votre **Messagerie**, aux **Notes de service** ou au **Calendrier 2026** des événements.</p>
+                <p class="text-xs text-blue-900">Utilisez la barre de navigation supérieure pour accéder à vos différents modules administratifs et opérationnels du groupement.</p>
             </div>
         </div>
 
@@ -138,21 +141,9 @@
                     ✏️ Nouveau message
                 </button>
                 <ul class="space-y-1 text-sm font-medium text-gray-700">
-                    <li>
-                        <button onclick="loadInbox()" class="w-full flex items-center gap-2 p-2 rounded hover:bg-gray-200 text-left" id="tab-inbox">
-                            <span>📥</span> Boîte de réception
-                        </button>
-                    </li>
-                    <li>
-                        <button onclick="loadSent()" class="w-full flex items-center gap-2 p-2 rounded hover:bg-gray-200 text-left" id="tab-sent">
-                            <span>📤</span> Messages envoyés
-                        </button>
-                    </li>
-                    <li>
-                        <button onclick="loadArchived()" class="w-full flex items-center gap-2 p-2 rounded hover:bg-gray-200 text-left" id="tab-archived">
-                            <span>📁</span> Messages archivés
-                        </button>
-                    </li>
+                    <li><button onclick="loadInbox()" class="w-full flex items-center gap-2 p-2 rounded hover:bg-gray-200 text-left" id="tab-inbox"><span>📥</span> Boîte de réception</button></li>
+                    <li><button onclick="loadSent()" class="w-full flex items-center gap-2 p-2 rounded hover:bg-gray-200 text-left" id="tab-sent"><span>📤</span> Messages envoyés</button></li>
+                    <li><button onclick="loadArchived()" class="w-full flex items-center gap-2 p-2 rounded hover:bg-gray-200 text-left" id="tab-archived"><span>📁</span> Messages archivés</button></li>
                 </ul>
             </div>
 
@@ -197,9 +188,59 @@
                     </div>
                     <div id="calendar-days-grid" class="grid grid-cols-7 gap-2"></div>
                 </div>
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 h-fit max-h-[550px] overflow-y-auto" id="calendar-sidebar"></div>
+            </div>
+        </div>
 
-                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 h-fit max-h-[550px] overflow-y-auto" id="calendar-sidebar">
-                    <p class="text-sm text-gray-400 text-center py-6 italic">Cliquez sur un jour du calendrier pour voir ou ajouter un événement.</p>
+        <div id="formations-view" class="hidden w-full bg-white rounded-lg shadow-lg p-6 self-start mt-4 border max-w-6xl">
+            <div class="border-b pb-4 mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">🎓 Demandes de Formations & Stages</h2>
+                <p class="text-sm text-gray-500">Développement des compétences et qualifications opérationnelles</p>
+            </div>
+
+            <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                <div class="bg-gray-50 p-5 rounded-lg border border-gray-200 h-fit">
+                    <h3 class="text-base font-bold text-gray-700 mb-4 flex items-center gap-1">📝 Nouvelle Demande</h3>
+                    <form onsubmit="submitFormationRequest(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Stage demandé</label>
+                            <input type="text" id="form-stage" required class="w-full p-2 border rounded bg-white text-sm" placeholder="ex: FDF1, COD2, Équipier LSPCC...">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Disponibilités</label>
+                            <input type="text" id="form-dispo" required class="w-full p-2 border rounded bg-white text-sm" placeholder="ex: Week-ends, Automne 2026, Du 12 au 18 Octobre...">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Motivations</label>
+                            <textarea id="form-motivations" required rows="4" class="w-full p-2 border rounded bg-white text-sm" placeholder="Exprimez vos motivations pour ce cursus technique..."></textarea>
+                        </div>
+                        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded text-sm shadow-sm transition">
+                            Soumettre ma demande
+                        </button>
+                    </form>
+                </div>
+
+                <div class="xl:col-span-2">
+                    <h3 class="text-base font-bold text-gray-700 mb-3 flex items-center gap-1">📊 Registre des demandes (Suivi Administration)</h3>
+                    
+                    <div id="form-admin-lock-msg" class="hidden bg-amber-50 border border-amber-200 text-amber-800 p-4 rounded text-sm italic">
+                        🔒 La liste centralisée des requêtes de formations est accessible uniquement aux comptes administrateurs de la direction. Votre dossier sera traité individuellement.
+                    </div>
+
+                    <div id="form-admin-table-wrapper" class="overflow-x-auto hidden">
+                        <table class="w-full text-left border-collapse border border-gray-200 rounded">
+                            <thead>
+                                <tr class="bg-gray-100 text-gray-700 text-xs uppercase border-b font-bold">
+                                    <th class="p-2.5 border-r">Demandeur</th>
+                                    <th class="p-2.5 border-r">Stage</th>
+                                    <th class="p-2.5 border-r">Disponibilités</th>
+                                    <th class="p-2.5 border-r">Motivations</th>
+                                    <th class="p-2.5 text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="formations-table-body" class="text-xs divide-y"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -219,7 +260,7 @@
         let currentUser = null;
         let editingNoteId = null;
         
-        let currentCalendarMonth = 5; // Juin par défaut
+        let currentCalendarMonth = 5; 
         const calendarYear = 2026;   
 
         const MONTH_NAMES = [
@@ -257,19 +298,20 @@
         function getEvents() {
             let events = localStorage.getItem('sdis74_events');
             if (!events) {
-                events = [
-                    {
-                        id: 1,
-                        date: "2026-06-15",
-                        time: "09:00",
-                        title: "Manœuvre Générale Feux de Forêt",
-                        description: "Exercice départemental regroupant les centres du secteur d'Annecy et de La Roche-sur-Foron.",
-                        responses: {} // Format stocké: {"email@test.fr": "coming" ou "not_coming"}
-                    }
-                ];
+                events = [{ id: 1, date: "2026-06-15", time: "09:00", title: "Manœuvre Générale Feux de Forêt", description: "Exercice départemental", responses: {} }];
                 localStorage.setItem('sdis74_events', JSON.stringify(events));
             }
             return JSON.parse(events);
+        }
+
+        // Récupérer / Initialiser les demandes de formations
+        function getFormations() {
+            let formations = localStorage.getItem('sdis74_formations');
+            if (!formations) {
+                formations = [];
+                localStorage.setItem('sdis74_formations', JSON.stringify(formations));
+            }
+            return JSON.parse(formations);
         }
 
         function handleLogin(event) {
@@ -308,24 +350,15 @@
             }
         }
 
-        function openMailbox() {
+        function openMailbox() { hideAllViews(); document.getElementById('mail-view').classList.remove('hidden'); loadInbox(); }
+        function openNotes() { hideAllViews(); document.getElementById('notes-view').classList.remove('hidden'); document.getElementById('add-note-main-btn').classList.remove('hidden'); loadNotes(); }
+        function openCalendar() { hideAllViews(); document.getElementById('calendar-view').classList.remove('hidden'); resetCalendarSidebar(); renderCalendar(); }
+        
+        // Ouvrir l'onglet Formations
+        function openFormations() {
             hideAllViews();
-            document.getElementById('mail-view').classList.remove('hidden');
-            loadInbox();
-        }
-
-        function openNotes() {
-            hideAllViews();
-            document.getElementById('notes-view').classList.remove('hidden');
-            document.getElementById('add-note-main-btn').classList.remove('hidden');
-            loadNotes();
-        }
-
-        function openCalendar() {
-            hideAllViews();
-            document.getElementById('calendar-view').classList.remove('hidden');
-            resetCalendarSidebar();
-            renderCalendar();
+            document.getElementById('formations-view').classList.remove('hidden');
+            renderFormationsPanel();
         }
 
         function hideAllViews() {
@@ -335,6 +368,7 @@
             document.getElementById('mail-view').classList.add('hidden');
             document.getElementById('notes-view').classList.add('hidden');
             document.getElementById('calendar-view').classList.add('hidden');
+            document.getElementById('formations-view').classList.add('hidden');
         }
 
         function logout() {
@@ -346,368 +380,108 @@
             document.getElementById('login-password').value = '';
         }
 
-        // --- SECTION MESSAGERIE ---
-        function loadInbox() {
-            setActiveMailTab('tab-inbox');
-            document.getElementById('mail-box-title').innerText = "Boîte de réception";
-            const messages = getMessages().filter(m => m.to === currentUser.email && !m.archived);
-            renderMessageList(messages, "inbox");
-        }
-        function loadSent() {
-            setActiveMailTab('tab-sent');
-            document.getElementById('mail-box-title').innerText = "Messages envoyés";
-            const messages = getMessages().filter(m => m.from === currentUser.email);
-            renderMessageList(messages, "sent");
-        }
-        function loadArchived() {
-            setActiveMailTab('tab-archived');
-            document.getElementById('mail-box-title').innerText = "Messages archivés";
-            const messages = getMessages().filter(m => m.to === currentUser.email && m.archived);
-            renderMessageList(messages, "archived");
-        }
-        function setActiveMailTab(tabId) {
-            ['tab-inbox', 'tab-sent', 'tab-archived'].forEach(id => document.getElementById(id).classList.remove('bg-gray-200'));
-            document.getElementById(tabId).classList.add('bg-gray-200');
-        }
-        function renderMessageList(messages, type) {
-            const area = document.getElementById('mail-content-area');
-            if (messages.length === 0) { area.innerHTML = `<p class="text-gray-400 text-center py-8 text-sm">Aucun message.</p>`; return; }
-            let html = `<div class="divide-y border border-gray-200 rounded overflow-hidden">`;
-            messages.reverse().forEach(msg => {
-                const correspondent = (type === "sent") ? `À : ${msg.to}` : `De : ${msg.from}`;
-                html += `
-                    <div class="p-3 bg-white hover:bg-gray-50 cursor-pointer flex justify-between items-center text-sm transition" onclick="viewMessage(${msg.id}, '${type}')">
-                        <div class="truncate pr-4">
-                            <span class="font-semibold text-gray-900 block md:inline md:w-48 truncate">${correspondent}</span>
-                            <span class="text-gray-800 font-medium ml-0 md:ml-4">— ${msg.subject}</span>
-                        </div>
-                        <span class="text-xs text-gray-400 whitespace-nowrap">${msg.date.split(' à ')[0]}</span>
-                    </div>
-                `;
-            });
-            html += `</div>`;
-            area.innerHTML = html;
-        }
-        function viewMessage(id, type) {
-            const msg = getMessages().find(m => m.id === id);
-            const area = document.getElementById('mail-content-area');
-            let archiveBtn = type === 'inbox' ? `<button onclick="archiveMessage(${msg.id})" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-1 px-3 rounded text-xs transition">📁 Archiver</button>` : '';
-            area.innerHTML = `
-                <div class="bg-gray-50 p-4 rounded border">
-                    <div class="flex justify-between items-center mb-4"><button onclick="${type === 'sent' ? 'loadSent()' : type === 'archived' ? 'loadArchived()' : 'loadInbox()'}" class="text-xs text-blue-600 hover:underline">← Retour</button>${archiveBtn}</div>
-                    <h4 class="text-xl font-bold text-gray-800 mb-2">${msg.subject}</h4>
-                    <p class="text-xs text-gray-500 mb-4 pb-2 border-b">De : ${msg.from} | À : ${msg.to} | ${msg.date}</p>
-                    <p class="text-sm text-gray-750 whitespace-pre-line leading-relaxed">${msg.body}</p>
-                </div>
-            `;
-        }
-        function archiveMessage(id) {
-            let messages = getMessages();
-            const idx = messages.findIndex(m => m.id === id);
-            if (idx !== -1) { messages[idx].archived = true; localStorage.setItem('sdis74_messages', JSON.stringify(messages)); loadInbox(); }
-        }
-        function showComposeForm() {
-            document.getElementById('mail-box-title').innerText = "Nouveau message";
-            const users = getUsers().filter(u => u.email !== currentUser.email);
-            let optionsHTML = users.map(u => `<option value="${u.email}">${u.prenom} ${u.nom} (${u.centre})</option>`).join('');
-            document.getElementById('mail-content-area').innerHTML = `
-                <form onsubmit="sendMessage(event)" class="space-y-4 bg-gray-50 p-4 rounded border">
-                    <div><label class="block text-xs font-bold uppercase text-gray-600 mb-1">Destinataire</label><select id="msg-to" required class="w-full p-2 border rounded bg-white text-sm">${optionsHTML}</select></div>
-                    <div><label class="block text-xs font-bold uppercase text-gray-600 mb-1">Objet</label><input type="text" id="msg-subject" required class="w-full p-2 border rounded bg-white text-sm"></div>
-                    <div><label class="block text-xs font-bold uppercase text-gray-600 mb-1">Message</label><textarea id="msg-body" required rows="5" class="w-full p-2 border rounded bg-white text-sm"></textarea></div>
-                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm transition">Envoyer 🚀</button>
-                </form>
-            `;
-        }
-        function sendMessage(event) {
+        // --- SECTION FORMATIONS & STAGES ---
+
+        function submitFormationRequest(event) {
             event.preventDefault();
-            const messages = getMessages();
-            const now = new Date();
-            messages.push({
-                id: Date.now(), from: currentUser.email, to: document.getElementById('msg-to').value,
-                subject: document.getElementById('msg-subject').value.trim(), body: document.getElementById('msg-body').value.trim(),
-                date: `${now.toLocaleDateString('fr-FR')} à ${now.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}`, archived: false
-            });
-            localStorage.setItem('sdis74_messages', JSON.stringify(messages));
-            loadSent();
-        }
-
-        // --- SECTION NOTES DE SERVICE ---
-        function loadNotes() {
-            editingNoteId = null;
-            const notes = getNotes();
-            const area = document.getElementById('notes-content-area');
-            if (notes.length === 0) { area.innerHTML = `<p class="text-gray-400 text-center py-8 text-sm">Aucune note de service disponible.</p>`; return; }
-            let html = `<div class="space-y-6">`;
-            notes.reverse().forEach(note => {
-                const canManage = (currentUser.email === note.authorEmail || currentUser.isAdmin);
-                html += `
-                    <div class="bg-white border-l-4 border-red-600 shadow-sm rounded-r p-5 border border-gray-200">
-                        <div class="flex justify-between items-start gap-4">
-                            <div><h4 class="text-lg font-bold text-gray-900">${note.title}</h4><p class="text-xs text-gray-400 mt-1">Publié le ${note.date} par <strong>${note.author}</strong></p></div>
-                            ${canManage ? `<div class="flex space-x-2 whitespace-nowrap"><button onclick="editNote(${note.id})" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold py-1 px-2.5 rounded transition">✏️ Modifier</button><button onclick="deleteNote(${note.id})" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2.5 rounded transition">❌ Supprimer</button></div>` : ''}
-                        </div>
-                        ${note.image ? `<div class="mt-4 border rounded max-w-xl bg-gray-50 overflow-hidden shadow-inner"><img src="${note.image}" class="w-full h-auto max-h-96 object-contain" /></div>` : ''}
-                    </div>
-                `;
-            });
-            html += `</div>`; area.innerHTML = html;
-        }
-        function showCreateNoteForm() {
-            document.getElementById('add-note-main-btn').classList.add('hidden');
-            document.getElementById('notes-content-area').innerHTML = `
-                <form onsubmit="saveNoteService(event)" class="space-y-4 bg-gray-50 p-5 rounded border max-w-3xl">
-                    <h3 class="text-base font-bold text-gray-800 border-b pb-2">Création d'une note</h3>
-                    <div><label class="block text-xs font-bold uppercase text-gray-600 mb-1">Intitulé / Titre</label><input type="text" id="note-title" required class="w-full p-2 border rounded bg-white text-sm"></div>
-                    <div><label class="block text-xs font-bold uppercase text-gray-600 mb-1">Image du document</label><input type="file" id="note-image" accept="image/*" required class="w-full p-1.5 border rounded bg-white text-sm"></div>
-                    <div class="flex gap-2 pt-2"><button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm transition">Diffuser la note 📢</button><button type="button" onclick="openNotes()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded text-sm transition">Annuler</button></div>
-                </form>
-            `;
-        }
-        function saveNoteService(event) {
-            event.preventDefault();
-            const title = document.getElementById('note-title').value.trim();
-            const imageFile = document.getElementById('note-image').files[0];
-            const now = new Date();
-            const dateStr = `${now.toLocaleDateString('fr-FR')} à ${now.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}`;
-            let notes = getNotes();
-
-            if (editingNoteId !== null) {
-                const idx = notes.findIndex(n => n.id === editingNoteId);
-                if (idx !== -1) {
-                    notes[idx].title = title; notes[idx].date = dateStr + " (modifié)";
-                    if (imageFile) {
-                        const reader = new FileReader();
-                        reader.onloadend = function() { notes[idx].image = reader.result; localStorage.setItem('sdis74_notes', JSON.stringify(notes)); openNotes(); };
-                        reader.readAsDataURL(imageFile);
-                    } else { localStorage.setItem('sdis74_notes', JSON.stringify(notes)); openNotes(); }
-                }
-                return;
-            }
-            if (!imageFile) return alert("Une image est requise.");
-            const reader = new FileReader();
-            reader.onloadend = function() {
-                notes.push({ id: Date.now(), author: `${currentUser.prenom} ${currentUser.nom} (${currentUser.centre})`, authorEmail: currentUser.email, title: title, date: dateStr, image: reader.result });
-                localStorage.setItem('sdis74_notes', JSON.stringify(notes)); openNotes();
-            };
-            reader.readAsDataURL(imageFile);
-        }
-        function editNote(id) {
-            editingNoteId = id; const note = getNotes().find(n => n.id === id);
-            document.getElementById('add-note-main-btn').classList.add('hidden');
-            document.getElementById('notes-content-area').innerHTML = `
-                <form onsubmit="saveNoteService(event)" class="space-y-4 bg-gray-50 p-5 rounded border max-w-3xl">
-                    <h3 class="text-base font-bold text-amber-600 border-b pb-2">✏️ Modification de la note</h3>
-                    <div><label class="block text-xs font-bold uppercase text-gray-600 mb-1">Modifier l'Intitulé</label><input type="text" id="note-title" required class="w-full p-2 border rounded bg-white text-sm" value="${note.title}"></div>
-                    <div><label class="block text-xs font-bold uppercase text-gray-600 mb-1">Remplacer l'image (Optionnel)</label><input type="file" id="note-image" accept="image/*" class="w-full p-1.5 border rounded bg-white text-sm"></div>
-                    <div class="flex gap-2 pt-2"><button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded text-sm transition">Mettre à jour ✔️</button><button type="button" onclick="openNotes()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded text-sm transition">Annuler</button></div>
-                </form>
-            `;
-        }
-        function deleteNote(id) { if (confirm("Supprimer cette note ?")) { let notes = getNotes().filter(n => n.id !== id); localStorage.setItem('sdis74_notes', JSON.stringify(notes)); loadNotes(); } }
-
-        // --- SECTION CALENDRIER INTERACTIF AVEC LISTE DE PRÉSENCE ---
-        function changeMonth(direction) {
-            currentCalendarMonth += direction;
-            if (currentCalendarMonth < 0) currentCalendarMonth = 11;
-            if (currentCalendarMonth > 11) currentCalendarMonth = 0;
-            renderCalendar(); resetCalendarSidebar();
-        }
-
-        function resetCalendarSidebar() {
-            document.getElementById('calendar-sidebar').innerHTML = `<p class="text-sm text-gray-400 text-center py-6 italic">Sélectionnez une date pour consulter ou configurer un événement.</p>`;
-        }
-
-        function renderCalendar() {
-            document.getElementById('calendar-month-year').innerText = `${MONTH_NAMES[currentCalendarMonth]} ${calendarYear}`;
-            const grid = document.getElementById('calendar-days-grid');
-            grid.innerHTML = '';
-
-            let firstDayIndex = new Date(calendarYear, currentCalendarMonth, 1).getDay() - 1;
-            if (firstDayIndex === -1) firstDayIndex = 6; 
-
-            const totalDays = new Date(calendarYear, currentCalendarMonth + 1, 0).getDate();
-            const events = getEvents();
-
-            for (let i = 0; i < firstDayIndex; i++) {
-                const emptyCell = document.createElement('div');
-                emptyCell.className = "bg-gray-50 border border-transparent min-h-[70px] rounded";
-                grid.appendChild(emptyCell);
-            }
-
-            for (let day = 1; day <= totalDays; day++) {
-                const dateString = `${calendarYear}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                const dayEvents = events.filter(e => e.date === dateString);
-
-                const dayCell = document.createElement('div');
-                dayCell.className = `border rounded p-1 min-h-[75px] transition flex flex-col justify-between cursor-pointer bg-white border-gray-200 hover:border-red-400 hover:shadow-sm`;
-                
-                if (dayEvents.length > 0) dayCell.className += " bg-red-50 border-red-300";
-
-                let eventBadgesHTML = '';
-                dayEvents.forEach(e => {
-                    eventBadgesHTML += `<div class="text-[10px] bg-red-600 text-white rounded px-1 py-0.5 truncate font-medium mt-1">⌚ ${e.time} - ${e.title}</div>`;
-                });
-
-                dayCell.innerHTML = `<span class="text-xs font-bold text-gray-700">${day}</span><div class="flex-grow overflow-hidden">${eventBadgesHTML}</div>`;
-                dayCell.onclick = () => selectDate(dateString, day);
-                grid.appendChild(dayCell);
-            }
-        }
-
-        function selectDate(dateString, dayNumber) {
-            const sidebar = document.getElementById('calendar-sidebar');
-            const dayEvents = getEvents().filter(e => e.date === dateString);
-            const allUsers = getUsers();
-            const formattedDate = `${dayNumber} ${MONTH_NAMES[currentCalendarMonth]} ${calendarYear}`;
             
-            let html = `<div class="space-y-4"><div class="border-b pb-2"><h4 class="font-bold text-gray-800 text-sm">📅 ${formattedDate}</h4></div>`;
+            const stage = document.getElementById('form-stage').value.trim();
+            const dispo = document.getElementById('form-dispo').value.trim();
+            const motivations = document.getElementById('form-motivations').value.trim();
 
-            if (dayEvents.length > 0) {
-                html += `<div class="space-y-4">`;
-                dayEvents.forEach(e => {
-                    if (!e.responses) e.responses = {};
+            const list = getFormations();
+            list.push({
+                id: Date.now(),
+                userEmail: currentUser.email,
+                userName: `${currentUser.prenom} ${currentUser.nom}`,
+                userCentre: currentUser.centre,
+                stage: stage,
+                dispo: dispo,
+                motivations: motivations
+            });
 
-                    // Séparer les réponses en deux listes (Présents / Absents)
-                    let comingList = [];
-                    let notComingList = [];
+            localStorage.setItem('sdis74_formations', JSON.stringify(list));
+            event.target.reset();
+            
+            alert("Votre demande de stage a été transmise avec succès au groupement formation.");
+            renderFormationsPanel();
+        }
 
-                    Object.keys(e.responses).forEach(userEmail => {
-                        const targetUser = allUsers.find(u => u.email === userEmail);
-                        if (targetUser) {
-                            const nameStr = `${targetUser.prenom} ${targetUser.nom} (${targetUser.centre})`;
-                            if (e.responses[userEmail] === 'coming') comingList.push(nameStr);
-                            if (e.responses[userEmail] === 'not_coming') notComingList.push(nameStr);
-                        }
-                    });
-
-                    // Déterminer le choix actuel de l'utilisateur connecté
-                    const currentChoice = e.responses[currentUser.email] || null;
-
-                    html += `
-                        <div class="bg-white p-3 rounded border border-gray-200 shadow-xs">
-                            <h5 class="text-xs font-bold uppercase text-red-600">${e.title}</h5>
-                            <p class="text-[11px] text-gray-500 font-semibold mt-0.5">Heure : ${e.time}</p>
-                            <p class="text-xs text-gray-700 my-2 bg-gray-50 p-2 rounded whitespace-pre-line border">${e.description}</p>
-                            
-                            <div class="border-t border-b py-2 my-2 bg-gray-50 px-1 rounded">
-                                <p class="text-[11px] font-bold text-gray-600 uppercase mb-1.5">Votre participation :</p>
-                                <div class="flex gap-2">
-                                    <button onclick="submitPresence(${e.id}, '${currentUser.email}', 'coming', '${dateString}', ${dayNumber})" 
-                                        class="flex-1 text-center font-bold text-xs py-1 px-2 rounded border transition ${currentChoice === 'coming' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:bg-green-50'}">
-                                        ✔ Je viens
-                                    </button>
-                                    <button onclick="submitPresence(${e.id}, '${currentUser.email}', 'not_coming', '${dateString}', ${dayNumber})" 
-                                        class="flex-1 text-center font-bold text-xs py-1 px-2 rounded border transition ${currentChoice === 'not_coming' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-700 border-red-300 hover:bg-red-50'}">
-                                        ❌ Absents
-                                    </button>
-                                </div>
-                            </div>
-
-                            <div class="space-y-2 mt-3 text-[11px]">
-                                <div>
-                                    <span class="font-bold text-green-700">🟢 Présents (${comingList.length}) :</span>
-                                    ${comingList.length > 0 ? `<ul class="list-disc list-inside text-gray-600 pl-1 mt-0.5">${comingList.map(li => `<li>${li}</li>`).join('')}</ul>` : `<p class="text-gray-400 italic pl-1">Aucun personnel enregistré</p>`}
-                                </div>
-                                <div>
-                                    <span class="font-bold text-red-700">🔴 Absents (${notComingList.length}) :</span>
-                                    ${notComingList.length > 0 ? `<ul class="list-disc list-inside text-gray-600 pl-1 mt-0.5">${notComingList.map(li => `<li>${li}</li>`).join('')}</ul>` : `<p class="text-gray-400 italic pl-1">Aucun personnel enregistré</p>`}
-                                </div>
-                            </div>
-
-                            ${currentUser.isAdmin ? `<button onclick="deleteEvent(${e.id}, '${dateString}', ${dayNumber})" class="text-[10px] text-red-600 hover:underline font-bold mt-3 pt-2 border-t block text-right w-full">🗑️ Supprimer l'événement</button>` : ''}
-                        </div>
-                    `;
-                });
-                html += `</div>`;
-            } else {
-                html += `<p class="text-xs text-gray-400 italic">Aucun événement répertorié pour ce jour.</p>`;
-            }
+        function renderFormationsPanel() {
+            const tableWrapper = document.getElementById('form-admin-table-wrapper');
+            const lockMsg = document.getElementById('form-admin-lock-msg');
+            const tbody = document.getElementById('formations-table-body');
+            
+            tbody.innerHTML = '';
 
             if (currentUser.isAdmin) {
-                html += `
-                    <form onsubmit="addEvent(event, '${dateString}', ${dayNumber})" class="border-t pt-4 mt-4 space-y-3">
-                        <h5 class="text-xs font-bold text-gray-700 uppercase">➕ Planifier un événement</h5>
-                        <div><label class="block text-[10px] font-bold text-gray-500 uppercase">Motif / Titre</label><input type="text" id="evt-title" required class="w-full p-1.5 border rounded bg-white text-xs" placeholder="ex: Réunion de caserne"></div>
-                        <div><label class="block text-[10px] font-bold text-gray-500 uppercase">Heure de début</label><input type="time" id="evt-time" required class="w-full p-1.5 border rounded bg-white text-xs"></div>
-                        <div><label class="block text-[10px] font-bold text-gray-500 uppercase">Description</label><textarea id="evt-desc" required rows="3" class="w-full p-1.5 border rounded bg-white text-xs"></textarea></div>
-                        <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-1.5 rounded text-xs transition">Enregistrer</button>
-                    </form>
-                `;
-            }
-            html += `</div>`; sidebar.innerHTML = html;
-        }
+                tableWrapper.classList.remove('hidden');
+                lockMsg.classList.add('hidden');
 
-        // Enregistrer la présence cochée (Je viens / Je ne viens pas)
-        function submitPresence(eventId, userEmail, choice, dateString, dayNumber) {
-            let events = getEvents();
-            const idx = events.findIndex(e => e.id === eventId);
-            
-            if (idx !== -1) {
-                if (!events[idx].responses) events[idx].responses = {};
-                
-                // Assigner la réponse
-                events[idx].responses[userEmail] = choice;
-                
-                localStorage.setItem('sdis74_events', JSON.stringify(events));
-                renderCalendar();
-                selectDate(dateString, dayNumber); // Rafraîchit instantanément la barre latérale pour tout le monde
-            }
-        }
+                const list = getFormations();
+                if (list.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400 italic">Aucune demande en attente dans le registre.</td></tr>`;
+                    return;
+                }
 
-        function addEvent(event, dateString, dayNumber) {
-            event.preventDefault();
-            const title = document.getElementById('evt-title').value.trim();
-            const time = document.getElementById('evt-time').value;
-            const description = document.getElementById('evt-desc').value.trim();
+                list.reverse().forEach(item => {
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-gray-50 border-b bg-white";
+                    tr.innerHTML = `
+                        <td class="p-2.5 border-r font-medium text-gray-900">
+                            <div>${item.userName}</div>
+                            <div class="text-[10px] text-gray-500 font-normal">${item.userCentre}</div>
+                        </td>
+                        <td class="p-2.5 border-r font-semibold text-red-700">${item.stage}</td>
+                        <td class="p-2.5 border-r text-gray-600">${item.dispo}</td>
+                        <td class="p-2.5 border-r text-gray-600 whitespace-pre-line max-w-xs">${item.motivations}</td>
+                        <td class="p-2.5 text-center">
+                            <button onclick="deleteFormationRequest(${item.id})" class="bg-red-100 hover:bg-red-200 text-red-700 font-bold px-2 py-1 rounded text-[11px] transition">
+                                Archivé / Clôturer
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
 
-            const events = getEvents();
-            events.push({ id: Date.now(), date: dateString, time: time, title: title, description: description, responses: {} });
-            localStorage.setItem('sdis74_events', JSON.stringify(events));
-            renderCalendar(); selectDate(dateString, dayNumber);
-        }
-
-        function deleteEvent(eventId, dateString, dayNumber) {
-            if (confirm("Supprimer cet événement ?")) {
-                let events = getEvents().filter(e => e.id !== eventId);
-                localStorage.setItem('sdis74_events', JSON.stringify(events));
-                renderCalendar(); resetCalendarSidebar();
+            } else {
+                tableWrapper.classList.add('hidden');
+                lockMsg.classList.remove('hidden');
             }
         }
 
-        // --- GESTION COMPTES AGENTS ---
-        function createUser(event) {
-            event.preventDefault();
-            const prenom = document.getElementById('new-prenom').value.trim();
-            const nom = document.getElementById('new-nom').value.trim();
-            const centre = document.getElementById('new-centre').value.trim();
-            const email = document.getElementById('new-email').value.trim();
-            const password = document.getElementById('new-password').value;
-
-            const users = getUsers();
-            if (users.some(u => u.email === email)) return alert("Email déjà attribué.");
-            users.push({ prenom, nom, centre, email, password, isAdmin: false });
-            localStorage.setItem('sdis74_users', JSON.stringify(users));
-
-            event.target.reset(); renderUsersTable();
-            alert(`Compte configuré.`);
+        function deleteFormationRequest(id) {
+            if (confirm("Voulez-vous clore et archiver ce dossier de formation ?")) {
+                let list = getFormations().filter(f => f.id !== id);
+                localStorage.setItem('sdis74_formations', JSON.stringify(list));
+                renderFormationsPanel();
+            }
         }
 
-        function renderUsersTable() {
-            const users = getUsers();
-            const tbody = document.getElementById('users-table-body');
-            tbody.innerHTML = '';
-            users.forEach(user => {
-                const tr = document.createElement('tr'); tr.className = "hover:bg-gray-50";
-                tr.innerHTML = `
-                    <td class="p-3 font-medium text-gray-900">${user.prenom} ${user.nom} ${user.isAdmin ? '👑' : ''}</td>
-                    <td class="p-3 text-gray-600">${user.centre}</td>
-                    <td class="p-3 text-gray-600 font-mono text-xs">${user.email}</td>
-                    <td class="p-3 text-gray-400 font-mono text-xs">${user.password}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+        // --- CODE PRE-EXISTANT (MESSAGERIE, NOTES, CALENDRIER) ---
+        function loadInbox() { setActiveMailTab('tab-inbox'); document.getElementById('mail-box-title').innerText = "Boîte de réception"; const messages = getMessages().filter(m => m.to === currentUser.email && !m.archived); renderMessageList(messages, "inbox"); }
+        function loadSent() { setActiveMailTab('tab-sent'); document.getElementById('mail-box-title').innerText = "Messages envoyés"; const messages = getMessages().filter(m => m.from === currentUser.email); renderMessageList(messages, "sent"); }
+        function loadArchived() { setActiveMailTab('tab-archived'); document.getElementById('mail-box-title').innerText = "Messages archivés"; const messages = getMessages().filter(m => m.to === currentUser.email && m.archived); renderMessageList(messages, "archived"); }
+        function setActiveMailTab(tabId) { ['tab-inbox', 'tab-sent', 'tab-archived'].forEach(id => document.getElementById(id).classList.remove('bg-gray-200')); document.getElementById(tabId).classList.add('bg-gray-200'); }
+        function renderMessageList(messages, type) { const area = document.getElementById('mail-content-area'); if (messages.length === 0) { area.innerHTML = `<p class="text-gray-400 text-center py-8 text-sm">Aucun message.</p>`; return; } let html = `<div class="divide-y border border-gray-200 rounded overflow-hidden">`; messages.reverse().forEach(msg => { const correspondent = (type === "sent") ? `À : ${msg.to}` : `De : ${msg.from}`; html += `<div class="p-3 bg-white hover:bg-gray-50 cursor-pointer flex justify-between items-center text-sm transition" onclick="viewMessage(${msg.id}, '${type}')"><div class="truncate pr-4"><span class="font-semibold text-gray-900 block md:inline md:w-48 truncate">${correspondent}</span><span class="text-gray-800 font-medium ml-0 md:ml-4">— ${msg.subject}</span></div><span class="text-xs text-gray-400 whitespace-nowrap">${msg.date.split(' à ')[0]}</span></div>`; }); html += `</div>`; area.innerHTML = html; }
+        function viewMessage(id, type) { const msg = getMessages().find(m => m.id === id); const area = document.getElementById('mail-content-area'); let archiveBtn = type === 'inbox' ? `<button onclick="archiveMessage(${msg.id})" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-1 px-3 rounded text-xs transition">📁 Archiver</button>` : ''; area.innerHTML = `<div class="bg-gray-50 p-4 rounded border"><div class="flex justify-between items-center mb-4"><button onclick="${type === 'sent' ? 'loadSent()' : type === 'archived' ? 'loadArchived()' : 'loadInbox()'}" class="text-xs text-blue-600 hover:underline">← Retour</button>${archiveBtn}</div><h4 class="text-xl font-bold text-gray-800 mb-2">${msg.subject}</h4><p class="text-xs text-gray-500 mb-4 pb-2 border-b">De : ${msg.from} | À : ${msg.to} | ${msg.date}</p><p class="text-sm text-gray-750 whitespace-pre-line leading-relaxed">${msg.body}</p></div>`; }
+        function archiveMessage(id) { let messages = getMessages(); const idx = messages.findIndex(m => m.id === id); if (idx !== -1) { messages[idx].archived = true; localStorage.setItem('sdis74_messages', JSON.stringify(messages)); loadInbox(); } }
+        function showComposeForm() { document.getElementById('mail-box-title').innerText = "Nouveau message"; const users = getUsers().filter(u => u.email !== currentUser.email); let optionsHTML = users.map(u => `<option value="${u.email}">${u.prenom} ${u.nom} (${u.centre})</option>`).join(''); document.getElementById('mail-content-area').innerHTML = `<form onsubmit="sendMessage(event)" class="space-y-4 bg-gray-50 p-4 rounded border"><div><label class="block text-xs font-bold uppercase text-gray-600 mb-1">Destinataire</label><select id="msg-to" required class="w-full p-2 border rounded bg-white text-sm">${optionsHTML}</select></div><div><label class="block text-xs font-bold uppercase text-gray-600 mb-1">Objet</label><input type="text" id="msg-subject" required class="w-full p-2 border rounded bg-white text-sm"></div><div><label class="block text-xs font-bold uppercase text-gray-600 mb-1">Message</label><textarea id="msg-body" required rows="5" class="w-full p-2 border rounded bg-white text-sm"></textarea></div><button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm transition">Envoyer 🚀</button></form>`; }
+        function sendMessage(event) { event.preventDefault(); const messages = getMessages(); const now = new Date(); messages.push({ id: Date.now(), from: currentUser.email, to: document.getElementById('msg-to').value, subject: document.getElementById('msg-subject').value.trim(), body: document.getElementById('msg-body').value.trim(), date: `${now.toLocaleDateString('fr-FR')} à ${now.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}`, archived: false }); localStorage.setItem('sdis74_messages', JSON.stringify(messages)); loadSent(); }
+        function loadNotes() { editingNoteId = null; const notes = getNotes(); const area = document.getElementById('notes-content-area'); if (notes.length === 0) { area.innerHTML = `<p class="text-gray-400 text-center py-8 text-sm">Aucune note de service disponible.</p>`; return; } let html = `<div class="space-y-6">`; notes.reverse().forEach(note => { const canManage = (currentUser.email === note.authorEmail || currentUser.isAdmin); html += `<div class="bg-white border-l-4 border-red-600 shadow-sm rounded-r p-5 border border-gray-200"><div class="flex justify-between items-start gap-4"><div><h4 class="text-lg font-bold text-gray-900">${note.title}</h4><p class="text-xs text-gray-400 mt-1">Publié le ${note.date} par <strong>${note.author}</strong></p></div>${canManage ? `<div class="flex space-x-2 whitespace-nowrap"><button onclick="editNote(${note.id})" class="bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold py-1 px-2.5 rounded transition">✏️ Modifier</button><button onclick="deleteNote(${note.id})" class="bg-red-600 hover:bg-red-700 text-white text-xs font-bold py-1 px-2.5 rounded transition">❌ Supprimer</button></div>` : ''}</div>${note.image ? `<div class="mt-4 border rounded max-w-xl bg-gray-50 overflow-hidden shadow-inner"><img src="${note.image}" class="w-full h-auto max-h-96 object-contain" /></div>` : ''}</div>`; }); html += `</div>`; area.innerHTML = html; }
+        function showCreateNoteForm() { document.getElementById('add-note-main-btn').classList.add('hidden'); document.getElementById('notes-content-area').innerHTML = `<form onsubmit="saveNoteService(event)" class="space-y-4 bg-gray-50 p-5 rounded border max-w-3xl"><h3 class="text-base font-bold text-gray-800 border-b pb-2">Création d'une note</h3><div><label class="block text-xs font-bold uppercase text-gray-600 mb-1">Intitulé / Titre</label><input type="text" id="note-title" required class="w-full p-2 border rounded bg-white text-sm"></div><div><label class="block text-xs font-bold uppercase text-gray-600 mb-1">Image du document</label><input type="file" id="note-image" accept="image/*" required class="w-full p-1.5 border rounded bg-white text-sm"></div><div class="flex gap-2 pt-2"><button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm transition">Diffuser la note 📢</button><button type="button" onclick="openNotes()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded text-sm transition">Annuler</button></div></form>`; }
+        function saveNoteService(event) { event.preventDefault(); const title = document.getElementById('note-title').value.trim(); const imageFile = document.getElementById('note-image').files[0]; const now = new Date(); const dateStr = `${now.toLocaleDateString('fr-FR')} à ${now.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}`; let notes = getNotes(); if (editingNoteId !== null) { const idx = notes.findIndex(n => n.id === editingNoteId); if (idx !== -1) { notes[idx].title = title; notes[idx].date = dateStr + " (modifié)"; if (imageFile) { const reader = new FileReader(); reader.onloadend = function() { notes[idx].image = reader.result; localStorage.setItem('sdis74_notes', JSON.stringify(notes)); openNotes(); }; reader.readAsDataURL(imageFile); } else { localStorage.setItem('sdis74_notes', JSON.stringify(notes)); openNotes(); } } return; } if (!imageFile) return alert("Une image est requise."); const reader = new FileReader(); reader.onloadend = function() { notes.push({ id: Date.now(), author: `${currentUser.prenom} ${currentUser.nom} (${currentUser.centre})`, authorEmail: currentUser.email, title: title, date: dateStr, image: reader.result }); localStorage.setItem('sdis74_notes', JSON.stringify(notes)); openNotes(); }; reader.readAsDataURL(imageFile); }
+        function editNote(id) { editingNoteId = id; const note = getNotes().find(n => n.id === id); document.getElementById('add-note-main-btn').classList.add('hidden'); document.getElementById('notes-content-area').innerHTML = `<form onsubmit="saveNoteService(event)" class="space-y-4 bg-gray-50 p-5 rounded border max-w-3xl"><h3 class="text-base font-bold text-amber-600 border-b pb-2">✏️ Modification de la note</h3><div><label class="block text-xs font-bold uppercase text-gray-600 mb-1">Modifier l'Intitulé</label><input type="text" id="note-title" required class="w-full p-2 border rounded bg-white text-sm" value="${note.title}"></div><div><label class="block text-xs font-bold uppercase text-gray-600 mb-1">Remplacer l'image (Optionnel)</label><input type="file" id="note-image" accept="image/*" class="w-full p-1.5 border rounded bg-white text-sm"></div><div class="flex gap-2 pt-2"><button type="submit" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-2 px-4 rounded text-sm transition">Mettre à jour ✔️</button><button type="button" onclick="openNotes()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded text-sm transition">Annuler</button></div></form>`; }
+        function deleteNote(id) { if (confirm("Supprimer cette note ?")) { let notes = getNotes().filter(n => n.id !== id); localStorage.setItem('sdis74_notes', JSON.stringify(notes)); loadNotes(); } }
+        function changeMonth(direction) { currentCalendarMonth += direction; if (currentCalendarMonth < 0) currentCalendarMonth = 11; if (currentCalendarMonth > 11) currentCalendarMonth = 0; renderCalendar(); resetCalendarSidebar(); }
+        function resetCalendarSidebar() { document.getElementById('calendar-sidebar').innerHTML = `<p class="text-sm text-gray-400 text-center py-6 italic">Sélectionnez une date pour consulter ou configurer un événement.</p>`; }
+        function renderCalendar() { document.getElementById('calendar-month-year').innerText = `${MONTH_NAMES[currentCalendarMonth]} ${calendarYear}`; const grid = document.getElementById('calendar-days-grid'); grid.innerHTML = ''; let firstDayIndex = new Date(calendarYear, currentCalendarMonth, 1).getDay() - 1; if (firstDayIndex === -1) firstDayIndex = 6; const totalDays = new Date(calendarYear, currentCalendarMonth + 1, 0).getDate(); const events = getEvents(); for (let i = 0; i < firstDayIndex; i++) { const emptyCell = document.createElement('div'); emptyCell.className = "bg-gray-50 border border-transparent min-h-[70px] rounded"; grid.appendChild(emptyCell); } for (let day = 1; day <= totalDays; day++) { const dateString = `${calendarYear}-${String(currentCalendarMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`; const dayEvents = events.filter(e => e.date === dateString); const dayCell = document.createElement('div'); dayCell.className = `border rounded p-1 min-h-[75px] transition flex flex-col justify-between cursor-pointer bg-white border-gray-200 hover:border-red-400 hover:shadow-sm`; if (dayEvents.length > 0) dayCell.className += " bg-red-50 border-red-300"; let eventBadgesHTML = ''; dayEvents.forEach(e => { eventBadgesHTML += `<div class="text-[10px] bg-red-600 text-white rounded px-1 py-0.5 truncate font-medium mt-1">⌚ ${e.time} - ${e.title}</div>`; }); dayCell.innerHTML = `<span class="text-xs font-bold text-gray-700">${day}</span><div class="flex-grow overflow-hidden">${eventBadgesHTML}</div>`; dayCell.onclick = () => selectDate(dateString, day); grid.appendChild(dayCell); } }
+        function selectDate(dateString, dayNumber) { const sidebar = document.getElementById('calendar-sidebar'); const dayEvents = getEvents().filter(e => e.date === dateString); const allUsers = getUsers(); const formattedDate = `${dayNumber} ${MONTH_NAMES[currentCalendarMonth]} ${calendarYear}`; let html = `<div class="space-y-4"><div class="border-b pb-2"><h4 class="font-bold text-gray-800 text-sm">📅 ${formattedDate}</h4></div>`; if (dayEvents.length > 0) { html += `<div class="space-y-4">`; dayEvents.forEach(e => { if (!e.responses) e.responses = {}; let comingList = []; let notComingList = []; Object.keys(e.responses).forEach(userEmail => { const targetUser = allUsers.find(u => u.email === userEmail); if (targetUser) { const nameStr = `${targetUser.prenom} ${targetUser.nom} (${targetUser.centre})`; if (e.responses[userEmail] === 'coming') comingList.push(nameStr); if (e.responses[userEmail] === 'not_coming') notComingList.push(nameStr); } }); const currentChoice = e.responses[currentUser.email] || null; html += `<div class="bg-white p-3 rounded border border-gray-200 shadow-xs"><h5 class="text-xs font-bold uppercase text-red-600">${e.title}</h5><p class="text-[11px] text-gray-500 font-semibold mt-0.5">Heure : ${e.time}</p><p class="text-xs text-gray-700 my-2 bg-gray-50 p-2 rounded whitespace-pre-line border">${e.description}</p><div class="border-t border-b py-2 my-2 bg-gray-50 px-1 rounded"><p class="text-[11px] font-bold text-gray-600 uppercase mb-1.5">Votre participation :</p><div class="flex gap-2"><button onclick="submitPresence(${e.id}, '${currentUser.email}', 'coming', '${dateString}', ${dayNumber})" class="flex-1 text-center font-bold text-xs py-1 px-2 rounded border transition ${currentChoice === 'coming' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-green-700 border-green-300 hover:bg-green-50'}">✔ Je viens</button><button onclick="submitPresence(${e.id}, '${currentUser.email}', 'not_coming', '${dateString}', ${dayNumber})" class="flex-1 text-center font-bold text-xs py-1 px-2 rounded border transition ${currentChoice === 'not_coming' ? 'bg-red-600 text-white border-red-600' : 'bg-white text-red-700 border-red-300 hover:bg-red-50'}">❌ Absents</button></div></div><div class="space-y-2 mt-3 text-[11px]"><div><span class="font-bold text-green-700">🟢 Présents (${comingList.length}) :</span>${comingList.length > 0 ? `<ul class="list-disc list-inside text-gray-600 pl-1 mt-0.5">${comingList.map(li => `<li>${li}</li>`).join('')}</ul>` : `<p class="text-gray-400 italic pl-1">Aucun personnel enregistré</p>`}</div><div><span class="font-bold text-red-700">🔴 Absents (${notComingList.length}) :</span>${notComingList.length > 0 ? `<ul class="list-disc list-inside text-gray-600 pl-1 mt-0.5">${notComingList.map(li => `<li>${li}</li>`).join('')}</ul>` : `<p class="text-gray-400 italic pl-1">Aucun personnel enregistré</p>`}</div></div>${currentUser.isAdmin ? `<button onclick="deleteEvent(${e.id}, '${dateString}', ${dayNumber})" class="text-[10px] text-red-600 hover:underline font-bold mt-3 pt-2 border-t block text-right w-full">🗑️ Supprimer l'événement</button>` : ''}</div>`; }); html += `</div>`; } else { html += `<p class="text-xs text-gray-400 italic">Aucun événement répertorié pour ce jour.</p>`; } if (currentUser.isAdmin) { html += `<form onsubmit="addEvent(event, '${dateString}', ${dayNumber})" class="border-t pt-4 mt-4 space-y-3"><h5 class="text-xs font-bold text-gray-700 uppercase">➕ Planifier un événement</h5><div><label class="block text-[10px] font-bold text-gray-500 uppercase">Motif / Titre</label><input type="text" id="evt-title" required class="w-full p-1.5 border rounded bg-white text-xs" placeholder="ex: Réunion de caserne"></div><div><label class="block text-[10px] font-bold text-gray-500 uppercase">Heure de début</label><input type="time" id="evt-time" required class="w-full p-1.5 border rounded bg-white text-xs"></div><div><label class="block text-[10px] font-bold text-gray-500 uppercase">Description</label><textarea id="evt-desc" required rows="3" class="w-full p-1.5 border rounded bg-white text-xs"></textarea></div><button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-1.5 rounded text-xs transition">Enregistrer</button></form>`; } html += `</div>`; sidebar.innerHTML = html; }
+        function submitPresence(eventId, userEmail, choice, dateString, dayNumber) { let events = getEvents(); const idx = events.findIndex(e => e.id === eventId); if (idx !== -1) { if (!events[idx].responses) events[idx].responses = {}; events[idx].responses[userEmail] = choice; localStorage.setItem('sdis74_events', JSON.stringify(events)); renderCalendar(); selectDate(dateString, dayNumber); } }
+        function addEvent(event, dateString, dayNumber) { event.preventDefault(); const title = document.getElementById('evt-title').value.trim(); const time = document.getElementById('evt-time').value; const description = document.getElementById('evt-desc').value.trim(); const events = getEvents(); events.push({ id: Date.now(), date: dateString, time: time, title: title, description: description, responses: {} }); localStorage.setItem('sdis74_events', JSON.stringify(events)); renderCalendar(); selectDate(dateString, dayNumber); }
+        function deleteEvent(eventId, dateString, dayNumber) { if (confirm("Supprimer cet événement ?")) { let events = getEvents().filter(e => e.id !== eventId); localStorage.setItem('sdis74_events', JSON.stringify(events)); renderCalendar(); resetCalendarSidebar(); } }
+        function createUser(event) { event.preventDefault(); const prenom = document.getElementById('new-prenom').value.trim(); const nom = document.getElementById('new-nom').value.trim(); const centre = document.getElementById('new-centre').value.trim(); const email = document.getElementById('new-email').value.trim(); const password = document.getElementById('new-password').value; const users = getUsers(); if (users.some(u => u.email === email)) return alert("Email déjà attribué."); users.push({ prenom, nom, centre, email, password, isAdmin: false }); localStorage.setItem('sdis74_users', JSON.stringify(users)); event.target.reset(); renderUsersTable(); alert(`Compte configuré.`); }
+        function renderUsersTable() { const users = getUsers(); const tbody = document.getElementById('users-table-body'); tbody.innerHTML = ''; users.forEach(user => { const tr = document.createElement('tr'); tr.className = "hover:bg-gray-50"; tr.innerHTML = ` <td class="p-3 font-medium text-gray-900">${user.prenom} ${user.nom} ${user.isAdmin ? '👑' : ''}</td> <td class="p-3 text-gray-600">${user.centre}</td> <td class="p-3 text-gray-600 font-mono text-xs">${user.email}</td> <td class="p-3 text-gray-400 font-mono text-xs">${user.password}</td> `; tbody.appendChild(tr); }); }
     </script>
 </body>
 </html>

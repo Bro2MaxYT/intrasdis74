@@ -44,7 +44,9 @@
 
         <div id="login-view" class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full border-t-4 border-red-600">
             <div class="text-center mb-6">
-                <img src="./logo.png" alt="" class="h-24 w-auto mx-auto mb-4 block animate-fade-in" onerror="this.style.display='none'">
+                <div class="w-32 h-32 rounded-full flex items-center justify-center mx-auto mb-4 bg-gray-150 border border-gray-200 shadow-inner">
+                    <img src="./logo.png" alt="" class="w-full h-full object-contain p-2" onerror="this.style.display='none'">
+                </div>
                 <h1 class="text-2xl font-bold text-gray-800">Connexion Intranet</h1>
                 <p class="text-gray-500 text-sm">SDIS Haute-Savoie</p>
             </div>
@@ -125,7 +127,7 @@
         </div>
 
         <div id="user-view" class="hidden w-full max-w-2xl bg-white p-8 rounded-lg shadow-lg text-center">
-            <div class="w-32 h-32 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden bg-gray-100 border shadow-sm">
+            <div class="w-32 h-32 rounded-full flex items-center justify-center mx-auto mb-4 overflow-hidden bg-gray-100 border border-gray-200 shadow-sm">
                 <img src="./logo.png" alt="" class="w-full h-full object-contain p-2" onerror="this.style.display='none'">
             </div>
             <h2 class="text-3xl font-bold text-gray-800 mb-1" id="welcome-user">Bienvenue</h2>

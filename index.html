@@ -44,7 +44,7 @@
 
         <div id="login-view" class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full border-t-4 border-red-600">
             <div class="text-center mb-6">
-                <div class="w-36 h-36 rounded-full mx-auto mb-4 bg-white border border-gray-300 shadow-sm overflow-hidden flex items-center justify-center">
+                <div class="w-80 h-80 rounded-full mx-auto mb-6 bg-white border border-gray-300 shadow-sm overflow-hidden flex items-center justify-center">
                     <img src="./logo.png" alt="" class="w-full h-full object-cover block" onerror="this.style.display='none'">
                 </div>
                 <h1 class="text-2xl font-bold text-gray-800">Connexion Intranet</h1>
@@ -127,7 +127,7 @@
         </div>
 
         <div id="user-view" class="hidden w-full max-w-2xl bg-white p-8 rounded-lg shadow-lg text-center">
-            <div class="w-36 h-36 rounded-full mx-auto mb-4 bg-white border border-gray-300 shadow-sm overflow-hidden flex items-center justify-center">
+            <div class="w-80 h-80 rounded-full mx-auto mb-6 bg-white border border-gray-300 shadow-sm overflow-hidden flex items-center justify-center">
                 <img src="./logo.png" alt="" class="w-full h-full object-cover block" onerror="this.style.display='none'">
             </div>
             <h2 class="text-3xl font-bold text-gray-800 mb-1" id="welcome-user">Bienvenue</h2>
@@ -364,83 +364,11 @@
             document.getElementById('formations-view').classList.add('hidden');
         }
 
-        function logout() {
-            currentUser = null;
-            hideAllViews();
-            document.getElementById('navbar').classList.add('hidden');
-            document.getElementById('login-view').classList.remove('hidden');
-            document.getElementById('login-email').value = '';
-            document.getElementById('login-password').value = '';
-        }
-
-        function submitFormationRequest(event) {
-            event.preventDefault();
-            const stage = document.getElementById('form-stage').value.trim();
-            const dispo = document.getElementById('form-dispo').value.trim();
-            const motivations = document.getElementById('form-motivations').value.trim();
-
-            const list = getFormations();
-            list.push({
-                id: Date.now(), userEmail: currentUser.email, userName: `${currentUser.prenom} ${currentUser.nom}`,
-                userCentre: currentUser.centre, stage: stage, dispo: dispo, motivations: motivations
-            });
-
-            localStorage.setItem('sdis74_formations', JSON.stringify(list));
-            event.target.reset();
-            alert("Votre demande de stage a été transmise avec succès au groupement formation.");
-            renderFormationsPanel();
-        }
-
-        function renderFormationsPanel() {
-            const tableWrapper = document.getElementById('form-admin-table-wrapper');
-            const lockMsg = document.getElementById('form-admin-lock-msg');
-            const tbody = document.getElementById('formations-table-body');
-            tbody.innerHTML = '';
-
-            if (currentUser.isAdmin) {
-                tableWrapper.classList.remove('hidden');
-                lockMsg.classList.add('hidden');
-
-                const list = getFormations();
-                if (list.length === 0) {
-                    tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400 italic">Aucune demande en attente dans le registre.</td></tr>`;
-                    return;
-                }
-
-                list.reverse().forEach(item => {
-                    const tr = document.createElement('tr');
-                    tr.className = "hover:bg-gray-50 border-b bg-white";
-                    tr.innerHTML = `
-                        <td class="p-2.5 border-r font-medium text-gray-900">
-                            <div>${item.userName}</div>
-                            <div class="text-[10px] text-gray-500 font-normal">${item.userCentre}</div>
-                        </td>
-                        <td class="p-2.5 border-r font-semibold text-red-700">${item.stage}</td>
-                        <td class="p-2.5 border-r text-gray-600">${item.dispo}</td>
-                        <td class="p-2.5 border-r text-gray-600 whitespace-pre-line max-w-xs">${item.motivations}</td>
-                        <td class="p-2.5 text-center">
-                            <button onclick="deleteFormationRequest(${item.id})" class="bg-red-100 hover:bg-red-200 text-red-700 font-bold px-2 py-1 rounded text-[11px] transition">
-                                Archivé / Clôturer
-                            </button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
-            } else {
-                tableWrapper.classList.add('hidden');
-                lockMsg.classList.remove('hidden');
-            }
-        }
-
-        function deleteFormationRequest(id) {
-            if (confirm("Voulez-vous clore et archiver ce dossier de formation ?")) {
-                let list = getFormations().filter(f => f.id !== id);
-                localStorage.setItem('sdis74_formations', JSON.stringify(list));
-                renderFormationsPanel();
-            }
-        }
-
         // --- AUTRES MODULES ---
+        function logout() { currentUser = null; hideAllViews(); document.getElementById('navbar').classList.add('hidden'); document.getElementById('login-view').classList.remove('hidden'); document.getElementById('login-email').value = ''; document.getElementById('login-password').value = ''; }
+        function submitFormationRequest(event) { event.preventDefault(); const stage = document.getElementById('form-stage').value.trim(); const dispo = document.getElementById('form-dispo').value.trim(); const motivations = document.getElementById('form-motivations').value.trim(); const list = getFormations(); list.push({ id: Date.now(), userEmail: currentUser.email, userName: `${currentUser.prenom} ${currentUser.nom}`, userCentre: currentUser.centre, stage: stage, dispo: dispo, motivations: motivations }); localStorage.setItem('sdis74_formations', JSON.stringify(list)); event.target.reset(); alert("Votre demande de stage a été transmise avec succès au groupement formation."); renderFormationsPanel(); }
+        function renderFormationsPanel() { const tableWrapper = document.getElementById('form-admin-table-wrapper'); const lockMsg = document.getElementById('form-admin-lock-msg'); const tbody = document.getElementById('formations-table-body'); tbody.innerHTML = ''; if (currentUser.isAdmin) { tableWrapper.classList.remove('hidden'); lockMsg.classList.add('hidden'); const list = getFormations(); if (list.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-gray-400 italic">Aucune demande en attente dans le registre.</td></tr>`; return; } list.reverse().forEach(item => { const tr = document.createElement('tr'); tr.className = "hover:bg-gray-50 border-b bg-white"; tr.innerHTML = ` <td class="p-2.5 border-r font-medium text-gray-900"> <div>${item.userName}</div> <div class="text-[10px] text-gray-500 font-normal">${item.userCentre}</div> </td> <td class="p-2.5 border-r font-semibold text-red-700">${item.stage}</td> <td class="p-2.5 border-r text-gray-600">${item.dispo}</td> <td class="p-2.5 border-r text-gray-600 whitespace-pre-line max-w-xs">${item.motivations}</td> <td class="p-2.5 text-center"> <button onclick="deleteFormationRequest(${item.id})" class="bg-red-100 hover:bg-red-200 text-red-700 font-bold px-2 py-1 rounded text-[11px] transition"> Archivé / Clôturer </button> </td> `; tbody.appendChild(tr); }); } else { tableWrapper.classList.add('hidden'); lockMsg.classList.remove('hidden'); } }
+        function deleteFormationRequest(id) { if (confirm("Voulez-vous clore et archiver ce dossier de formation ?")) { let list = getFormations().filter(f => f.id !== id); localStorage.setItem('sdis74_formations', JSON.stringify(list)); renderFormationsPanel(); } }
         function loadInbox() { setActiveMailTab('tab-inbox'); document.getElementById('mail-box-title').innerText = "Boîte de réception"; const messages = getMessages().filter(m => m.to === currentUser.email && !m.archived); renderMessageList(messages, "inbox"); }
         function loadSent() { setActiveMailTab('tab-sent'); document.getElementById('mail-box-title').innerText = "Messages envoyés"; const messages = getMessages().filter(m => m.from === currentUser.email); renderMessageList(messages, "sent"); }
         function loadArchived() { setActiveMailTab('tab-archived'); document.getElementById('mail-box-title').innerText = "Messages archivés"; const messages = getMessages().filter(m => m.to === currentUser.email && m.archived); renderMessageList(messages, "archived"); }

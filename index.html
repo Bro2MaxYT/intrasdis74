@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SDIS 74 - Intranet & Messagerie</title>
+    <title>SDIS 74 - Intranet Évolué</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-gray-100 font-sans min-h-screen flex flex-col">
@@ -122,44 +122,54 @@
             
             <div class="bg-blue-50 border-l-4 border-blue-500 p-4 text-left max-w-md mx-auto inline-block">
                 <p class="text-sm text-blue-700 font-semibold mb-1">Portail Opérationnel :</p>
-                <p class="text-xs text-blue-900">Vous pouvez naviguer vers votre messagerie sécurisée en utilisant le bouton <strong>Messagerie</strong> situé dans la barre rouge en haut.</p>
+                <p class="text-xs text-blue-900">Vous pouvez naviguer vers votre messagerie sécurisée et les notes de service en utilisant le bouton <strong>Messagerie</strong> situé dans la barre rouge en haut.</p>
             </div>
         </div>
 
-        <div id="mail-view" class="hidden w-full bg-white rounded-lg shadow-lg grid grid-cols-1 md:grid-cols-4 min-h-[500px] self-start mt-4 overflow-hidden border">
+        <div id="mail-view" class="hidden w-full bg-white rounded-lg shadow-lg grid grid-cols-1 md:grid-cols-4 min-h-[550px] self-start mt-4 overflow-hidden border">
             <div class="bg-gray-50 p-4 border-r border-gray-200 space-y-4">
                 <button onclick="showComposeForm()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full shadow text-sm transition flex items-center justify-center gap-2">
                     ✏️ Nouveau message
                 </button>
-                <ul class="space-y-1 text-sm font-medium text-gray-700">
+                <ul class="space-y-1 text-sm font-medium text-gray-700 border-b pb-4">
                     <li>
-                        <button onclick="loadInbox()" class="w-full flex justify-between items-center p-2 rounded hover:bg-gray-200 text-left active-mail-tab" id="tab-inbox">
-                            <span>📥 Boîte de réception</span>
+                        <button onclick="loadInbox()" class="w-full flex items-center gap-2 p-2 rounded hover:bg-gray-200 text-left" id="tab-inbox">
+                            <span>📥</span> Boîte de réception
                         </button>
                     </li>
                     <li>
-                        <button onclick="loadSent()" class="w-full flex justify-between items-center p-2 rounded hover:bg-gray-200 text-left" id="tab-sent">
-                            <span>📤 Messages envoyés</span>
+                        <button onclick="loadSent()" class="w-full flex items-center gap-2 p-2 rounded hover:bg-gray-200 text-left" id="tab-sent">
+                            <span>📤</span> Messages envoyés
+                        </button>
+                    </li>
+                    <li>
+                        <button onclick="loadArchived()" class="w-full flex items-center gap-2 p-2 rounded hover:bg-gray-200 text-left" id="tab-archived">
+                            <span>📁</span> Messages archivés
+                        </button>
+                    </li>
+                </ul>
+                <ul class="space-y-1 text-sm font-medium text-gray-700">
+                    <li>
+                        <button onclick="loadNotes()" class="w-full flex items-center gap-2 p-2 rounded bg-red-50 text-red-700 hover:bg-red-100 text-left font-bold" id="tab-notes">
+                            <span>📋</span> Notes de service
                         </button>
                     </li>
                 </ul>
             </div>
 
             <div class="md:col-span-3 flex flex-col bg-white">
-                
                 <div class="p-4 border-b bg-gray-50 flex justify-between items-center">
                     <h3 id="mail-box-title" class="text-lg font-bold text-gray-800">Boîte de réception</h3>
+                    <div id="notes-action-btn-area"></div>
                 </div>
 
-                <div id="mail-content-area" class="flex-grow overflow-y-auto p-4 max-h-[450px]">
-                    </div>
+                <div id="mail-content-area" class="flex-grow overflow-y-auto p-4 max-h-[500px]"></div>
             </div>
         </div>
 
     </main>
 
     <script>
-        // Administrateur par défaut
         const DEFAULT_ADMIN = {
             email: "admin@sdis74.fr",
             password: "Admin74!!",
@@ -171,7 +181,6 @@
 
         let currentUser = null;
 
-        // Charger les utilisateurs
         function getUsers() {
             let users = localStorage.getItem('sdis74_users');
             if (!users) {
@@ -187,7 +196,6 @@
             return users;
         }
 
-        // Charger / Initialiser les messages fictifs
         function getMessages() {
             let messages = localStorage.getItem('sdis74_messages');
             if (!messages) {
@@ -195,10 +203,11 @@
                     {
                         id: 1,
                         from: "admin@sdis74.fr",
-                        to: "camarade@sdis74.fr", // s'adaptera si créé, visible par défaut pour la démo
+                        to: "camarade@sdis74.fr",
                         subject: "Bienvenue sur l'intranet !",
-                        body: "Bonjour et bienvenue sur la nouvelle plateforme du SDIS 74. Ce système vous permet d'échanger en toute sécurité avec vos collègues de Haute-Savoie.",
-                        date: "02/06/2026 à 10:15"
+                        body: "Bonjour et bienvenue sur la nouvelle plateforme du SDIS 74. Ce système vous permet d'échanger en toute sécurité et de consulter les notes de service.",
+                        date: "02/06/2026 à 10:15",
+                        archived: false
                     }
                 ];
                 localStorage.setItem('sdis74_messages', JSON.stringify(messages));
@@ -206,7 +215,23 @@
             return JSON.parse(messages);
         }
 
-        // Gérer la connexion
+        function getNotes() {
+            let notes = localStorage.getItem('sdis74_notes');
+            if (!notes) {
+                notes = [
+                    {
+                        id: 1,
+                        author: "Direction SDIS 74",
+                        title: "Note de sécurité collective - Vigilance Été",
+                        date: "02/06/2026 à 12:00",
+                        image: "" // Pas d'image pour l'exemple initial
+                    }
+                ];
+                localStorage.setItem('sdis74_notes', JSON.stringify(notes));
+            }
+            return JSON.parse(notes);
+        }
+
         function handleLogin(event) {
             event.preventDefault();
             const emailInput = document.getElementById('login-email').value.trim();
@@ -231,7 +256,6 @@
             document.getElementById('user-display-name').innerText = `${currentUser.prenom} ${currentUser.nom} (${currentUser.centre})`;
         }
 
-        // Navigation : Retour à l'écran d'accueil (Admin ou Sapeur)
         function goHome() {
             hideAllViews();
             if (currentUser.isAdmin) {
@@ -244,7 +268,6 @@
             }
         }
 
-        // Navigation : Ouvrir la boîte mail
         function openMailbox() {
             hideAllViews();
             document.getElementById('mail-view').classList.remove('hidden');
@@ -256,9 +279,9 @@
             document.getElementById('admin-view').classList.add('hidden');
             document.getElementById('user-view').classList.add('hidden');
             document.getElementById('mail-view').classList.add('hidden');
+            document.getElementById('notes-action-btn-area').innerHTML = '';
         }
 
-        // Déconnexion
         function logout() {
             currentUser = null;
             hideAllViews();
@@ -268,44 +291,59 @@
             document.getElementById('login-password').value = '';
         }
 
-        // --- SECTION MESSAGERIE LOGIQUE ---
+        // --- CORE MESSAGERIE (INBOX / SENT / ARCHIVE) ---
 
         function loadInbox() {
             setActiveTab('tab-inbox');
             document.getElementById('mail-box-title').innerText = "Boîte de réception";
-            const messages = getMessages().filter(m => m.to === currentUser.email);
-            renderMessageList(messages, true);
+            document.getElementById('notes-action-btn-area').innerHTML = '';
+            const messages = getMessages().filter(m => m.to === currentUser.email && !m.archived);
+            renderMessageList(messages, "inbox");
         }
 
         function loadSent() {
             setActiveTab('tab-sent');
             document.getElementById('mail-box-title').innerText = "Messages envoyés";
+            document.getElementById('notes-action-btn-area').innerHTML = '';
             const messages = getMessages().filter(m => m.from === currentUser.email);
-            renderMessageList(messages, false);
+            renderMessageList(messages, "sent");
+        }
+
+        function loadArchived() {
+            setActiveTab('tab-archived');
+            document.getElementById('mail-box-title').innerText = "Messages archivés";
+            document.getElementById('notes-action-btn-area').innerHTML = '';
+            const messages = getMessages().filter(m => m.to === currentUser.email && m.archived);
+            renderMessageList(messages, "archived");
         }
 
         function setActiveTab(tabId) {
-            document.getElementById('tab-inbox').classList.remove('bg-gray-200');
-            document.getElementById('tab-sent').classList.remove('bg-gray-200');
-            document.getElementById(tabId).classList.add('bg-gray-200');
+            ['tab-inbox', 'tab-sent', 'tab-archived', 'tab-notes'].forEach(id => {
+                document.getElementById(id).classList.remove('bg-gray-200', 'bg-red-100');
+            });
+            if(tabId === 'tab-notes') {
+                document.getElementById(tabId).classList.add('bg-red-100');
+            } else {
+                document.getElementById(tabId).classList.add('bg-gray-200');
+            }
         }
 
-        function renderMessageList(messages, isInbox) {
+        function renderMessageList(messages, type) {
             const area = document.getElementById('mail-content-area');
             if (messages.length === 0) {
-                area.innerHTML = `<p class="text-gray-400 text-center py-8 text-sm">Aucun message pour le moment.</p>`;
+                area.innerHTML = `<p class="text-gray-400 text-center py-8 text-sm">Aucun message dans cette catégorie.</p>`;
                 return;
             }
 
             let html = `<div class="divide-y border border-gray-200 rounded overflow-hidden">`;
             messages.reverse().forEach(msg => {
-                const correspondent = isInbox ? `De : ${msg.from}` : `À : ${msg.to}`;
+                const correspondent = (type === "sent") ? `À : ${msg.to}` : `De : ${msg.from}`;
                 html += `
-                    <div class="p-3 bg-white hover:bg-gray-50 cursor-pointer flex justify-between items-center text-sm transition" onclick='viewMessage(${JSON.stringify(msg)})'>
+                    <div class="p-3 bg-white hover:bg-gray-50 cursor-pointer flex justify-between items-center text-sm transition" onclick="viewMessage(${msg.id}, '${type}')">
                         <div class="truncate pr-4">
                             <span class="font-semibold text-gray-900 block md:inline md:w-48 truncate">${correspondent}</span>
                             <span class="text-gray-800 font-medium ml-0 md:ml-4">— ${msg.subject}</span>
-                            <span class="text-gray-500 text-xs hidden md:inline"> - ${msg.body.substring(0, 60)}...</span>
+                            <span class="text-gray-500 text-xs hidden md:inline"> - ${msg.body.substring(0, 50)}...</span>
                         </div>
                         <span class="text-xs text-gray-400 whitespace-nowrap">${msg.date.split(' à ')[0]}</span>
                     </div>
@@ -315,11 +353,24 @@
             area.innerHTML = html;
         }
 
-        function viewMessage(msg) {
+        function viewMessage(id, type) {
+            const msg = getMessages().find(m => m.id === id);
             const area = document.getElementById('mail-content-area');
+            
+            let actionButton = '';
+            if (type === 'inbox') {
+                actionButton = `
+                    <button onclick="archiveMessage(${msg.id})" class="bg-amber-500 hover:bg-amber-600 text-white font-bold py-1 px-3 rounded text-xs transition flex items-center gap-1">
+                        📁 Archiver ce message
+                    </button>`;
+            }
+
             area.innerHTML = `
                 <div class="bg-gray-50 p-4 rounded border">
-                    <button onclick="loadInbox()" class="text-xs text-blue-600 hover:underline mb-4 block">← Retour à la liste</button>
+                    <div class="flex justify-between items-center mb-4">
+                        <button onclick="${type === 'sent' ? 'loadSent()' : type === 'archived' ? 'loadArchived()' : 'loadInbox()'}" class="text-xs text-blue-600 hover:underline">← Retour à la liste</button>
+                        ${actionButton}
+                    </div>
                     <h4 class="text-xl font-bold text-gray-800 mb-2">${msg.subject}</h4>
                     <div class="text-xs text-gray-500 mb-4 pb-2 border-b">
                         <p><strong>Expéditeur :</strong> ${msg.from}</p>
@@ -331,9 +382,21 @@
             `;
         }
 
+        function archiveMessage(id) {
+            let messages = getMessages();
+            const index = messages.findIndex(m => m.id === id);
+            if (index !== -1) {
+                messages[index].archived = true;
+                localStorage.setItem('sdis74_messages', JSON.stringify(messages));
+                alert("Message archivé avec succès.");
+                loadInbox();
+            }
+        }
+
         function showComposeForm() {
             document.getElementById('mail-box-title').innerText = "Nouveau message";
-            const users = getUsers().filter(u => u.email !== currentUser.email); // ne pas s'écrire à soi-même
+            document.getElementById('notes-action-btn-area').innerHTML = '';
+            const users = getUsers().filter(u => u.email !== currentUser.email);
             
             let optionsHTML = users.map(u => `<option value="${u.email}">${u.prenom} ${u.nom} (${u.centre})</option>`).join('');
 
@@ -356,12 +419,8 @@
                         <textarea id="msg-body" required rows="6" class="w-full p-2 border rounded bg-white text-sm" placeholder="Écrivez votre message ici..."></textarea>
                     </div>
                     <div class="flex gap-2">
-                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm transition">
-                            Envoyer le message 🚀
-                        </button>
-                        <button type="button" onclick="loadInbox()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded text-sm transition">
-                            Annuler
-                        </button>
+                        <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm transition">Envoyer 🚀</button>
+                        <button type="button" onclick="loadInbox()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded text-sm transition">Annuler</button>
                     </div>
                 </form>
             `;
@@ -376,24 +435,131 @@
             const now = new Date();
             const dateStr = `${now.toLocaleDateString('fr-FR')} à ${now.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}`;
 
-            const messages = JSON.parse(localStorage.getItem('sdis74_messages')) || [];
-            const newMsg = {
+            const messages = getMessages();
+            messages.push({
                 id: Date.now(),
                 from: currentUser.email,
                 to: to,
                 subject: subject,
                 body: body,
-                date: dateStr
-            };
-
-            messages.push(newMsg);
+                date: dateStr,
+                archived: false
+            });
             localStorage.setItem('sdis74_messages', JSON.stringify(messages));
 
-            alert("Message envoyé avec succès !");
-            loadSent(); // Rediriger vers les messages envoyés
+            alert("Message envoyé !");
+            loadSent();
         }
 
-        // --- SECTION GESTION ADMIN (UTILISATEURS) ---
+        // --- SECTION CATEGORIE: NOTES DE SERVICE ---
+
+        function loadNotes() {
+            setActiveTab('tab-notes');
+            document.getElementById('mail-box-title').innerText = "Notes de service collectives";
+            
+            // Ajout du bouton d'action pour créer une note globale
+            document.getElementById('notes-action-btn-area').innerHTML = `
+                <button onclick="showCreateNoteForm()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1.5 px-3 rounded text-xs transition flex items-center gap-1">
+                    ➕ Créer une note de service
+                </button>
+            `;
+
+            const notes = getNotes();
+            const area = document.getElementById('mail-content-area');
+            
+            if (notes.length === 0) {
+                area.innerHTML = `<p class="text-gray-400 text-center py-8 text-sm">Aucune note de service officielle publiée.</p>`;
+                return;
+            }
+
+            let html = `<div class="space-y-6">`;
+            notes.reverse().forEach(note => {
+                html += `
+                    <div class="bg-white border-l-4 border-red-600 shadow-sm rounded-r p-4 border border-gray-200">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="text-base font-bold text-gray-900">${note.title}</h4>
+                            <span class="text-xs text-gray-400 whitespace-nowrap ml-4">${note.date}</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-4">Publié par : <strong>${note.author}</strong></p>
+                        ${note.image ? `
+                            <div class="mt-2 border rounded overflow-hidden max-w-lg bg-gray-50">
+                                <img src="${note.image}" alt="Note de service" class="w-full h-auto object-contain max-h-96" />
+                            </div>
+                        ` : '<p class="text-xs text-gray-400 italic">Aucun document visuel rattaché.</p>'}
+                    </div>
+                `;
+            });
+            html += `</div>`;
+            area.innerHTML = html;
+        }
+
+        function showCreateNoteForm() {
+            document.getElementById('mail-box-title').innerText = "Publier une note de service";
+            document.getElementById('notes-action-btn-area').innerHTML = '';
+
+            const area = document.getElementById('mail-content-area');
+            area.innerHTML = `
+                <form onsubmit="saveNoteService(event)" class="space-y-4 max-w-2xl bg-gray-50 p-4 rounded border">
+                    <div class="bg-amber-50 border-l-4 border-amber-500 p-3 text-xs text-amber-800 font-medium mb-2">
+                        📌 Note : Cette publication sera instantanément visible par l'ensemble des personnels du SDIS 74 connectés.
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Titre de la note de service</label>
+                        <input type="text" id="note-title" required class="w-full p-2 border rounded bg-white text-sm" placeholder="ex: Dispositif opérationnel feux de forêt 2026">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase text-gray-600 mb-1">Uploader une IMAGE (Document / Infographie)</label>
+                        <input type="file" id="note-image" accept="image/*" required class="w-full p-1.5 border rounded bg-white text-sm">
+                        <p class="text-[11px] text-gray-400 mt-1">Veuillez choisir un fichier image (.png, .jpg, .jpeg) léger pour le prototype.</p>
+                    </div>
+                    <div class="flex gap-2 pt-2">
+                        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded text-sm transition">
+                            Diffuser à tous les centres 📢
+                        </button>
+                        <button type="button" onclick="loadNotes()" class="bg-gray-300 hover:bg-gray-400 text-gray-700 font-bold py-2 px-4 rounded text-sm transition">
+                            Annuler
+                        </button>
+                    </div>
+                </form>
+            `;
+        }
+
+        function saveNoteService(event) {
+            event.preventDefault();
+            const title = document.getElementById('note-title').value.trim();
+            const imageFile = document.getElementById('note-image').files[0];
+
+            if (!imageFile) {
+                alert("Veuillez sélectionner une image.");
+                return;
+            }
+
+            // Encodage de l'image en Base64 pour sauvegarde dans le localStorage
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                const base64Image = reader.result;
+
+                const now = new Date();
+                const dateStr = `${now.toLocaleDateString('fr-FR')} à ${now.toLocaleTimeString('fr-FR', {hour: '2-digit', minute:'2-digit'})}`;
+
+                const notes = JSON.parse(localStorage.getItem('sdis74_notes')) || [];
+                notes.push({
+                    id: Date.now(),
+                    author: `${currentUser.prenom} ${currentUser.nom} (${currentUser.centre})`,
+                    title: title,
+                    date: dateStr,
+                    image: base64Image
+                });
+
+                localStorage.setItem('sdis74_notes', JSON.stringify(notes));
+                alert("La note de service a été publiée avec succès !");
+                loadNotes();
+            };
+
+            reader.readAsDataURL(imageFile);
+        }
+
+        // --- GESTION ADMIN UTILISATEURS ---
 
         function createUser(event) {
             event.preventDefault();

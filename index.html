@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SDIS 74 - Intranet Prototype</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans min-h-screen flex flex-col">
+
+    <nav id="navbar" class="hidden bg-red-700 text-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">🚒</span>
+                <span class="font-bold text-xl tracking-wider">SDIS 74 | Intranet</span>
+            </div>
+            <div class="flex items-center space-x-4">
+                <span id="user-display-name" class="font-medium"></span>
+                <button onclick="logout()" class="bg-red-800 hover:bg-red-900 px-4 py-2 rounded text-sm font-semibold transition">
+                    Déconnexion
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow flex items-center justify-center p-4">
+
+        <div id="login-view" class="bg-white p-8 rounded-lg shadow-lg max-w-md w-full border-t-4 border-red-600">
+            <div class="text-center mb-6">
+                <span class="text-4xl">🚒</span>
+                <h1 class="text-2xl font-bold text-gray-800 mt-2">Connexion Intranet</h1>
+                <p class="text-gray-500 text-sm">SDIS Haute-Savoie</p>
+            </div>
+            
+            <div id="login-error" class="hidden bg-red-100 text-red-700 p-3 rounded mb-4 text-sm text-center font-medium">
+                Identifiants incorrects.
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Adresse Email</label>
+                    <input type="email" id="login-email" required class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="exemple@sdis74.fr">
+                </div>
+                <div>
+                    <label class="block text-gray-700 text-sm font-semibold mb-1">Mot de passe</label>
+                    <input type="password" id="login-password" required class="w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" placeholder="••••••••">
+                </div>
+                <button type="submit" class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 rounded-md transition">
+                    Se connecter
+                </button>
+            </form>
+        </div>
+
+        <div id="admin-view" class="hidden w-full max-w-5xl bg-white p-6 rounded-lg shadow-lg">
+            <div class="border-b pb-4 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Panneau d'Administration</h2>
+                    <p class="text-sm text-gray-500">Gestion des agents et des accès aux casernes</p>
+                </div>
+                <span class="bg-red-100 text-red-800 font-semibold px-3 py-1 rounded text-sm">Rôle : Administrateur</span>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200 h-fit">
+                    <h3 class="text-lg font-bold text-gray-700 mb-4 flex items-center">
+                        <span class="mr-2">👤+</span> Ajouter un agent
+                    </h3>
+                    <form onsubmit="createUser(event)" class="space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-600">Prénom</label>
+                            <input type="text" id="new-prenom" required class="w-full p-2 border rounded bg-white text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-600">Nom</label>
+                            <input type="text" id="new-nom" required class="w-full p-2 border rounded bg-white text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-600">Centre d'affectation</label>
+                            <input type="text" id="new-centre" placeholder="ex: Annecy, Chamonix..." required class="w-full p-2 border rounded bg-white text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-600">Email (Faux ou Réel)</label>
+                            <input type="email" id="new-email" required class="w-full p-2 border rounded bg-white text-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase text-gray-600">Mot de passe</label>
+                            <input type="password" id="new-password" required class="w-full p-2 border rounded bg-white text-sm">
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white text-sm font-bold py-2 rounded transition mt-2">
+                            Créer le compte
+                        </button>
+                    </form>
+                </div>
+
+                <div class="lg:col-span-2 overflow-x-auto">
+                    <h3 class="text-lg font-bold text-gray-700 mb-4">Liste des utilisateurs enregistrés</h3>
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-100 text-gray-700 text-xs uppercase tracking-wider border-b">
+                                <th class="p-3">Agent</th>
+                                <th class="p-3">Centre</th>
+                                <th class="p-3">Email</th>
+                                <th class="p-3">Mot de passe</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body" class="text-sm divide-y">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div id="user-view" class="hidden w-full max-w-2xl bg-white p-8 rounded-lg shadow-lg text-center">
+            <div class="w-24 h-24 bg-red-100 text-red-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-4">
+                👨‍🚒
+            </div>
+            <h2 class="text-3xl font-bold text-gray-800 mb-1" id="welcome-user">Bienvenue</h2>
+            <p class="text-gray-500 font-medium mb-6" id="welcome-centre">Centre de secours</p>
+            
+            <div class="bg-blue-50 border-l-4 border-blue-500 p-4 text-left max-w-md mx-auto inline-block">
+                <p class="text-sm text-blue-700 font-semibold mb-1">Informations de votre session :</p>
+                <ul class="text-xs text-blue-900 space-y-1">
+                    <li><strong>Statut :</strong> Connecté avec succès à l'intranet opérationnel</li>
+                    <li><strong>Rôle :</strong> Sapeur-Pompier / Personnel du SDIS 74</li>
+                </ul>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        // Configuration initiale du compte Admin par défaut
+        const DEFAULT_ADMIN = {
+            email: "admin@sdis74.fr",
+            password: "Admin74!!",
+            nom: "ADMIN",
+            prenom: "Responsable",
+            centre: "Direction Départementale (Annecy)",
+            isAdmin: true
+        };
+
+        // Charger les utilisateurs depuis le localStorage ou initialiser avec l'admin
+        function getUsers() {
+            let users = localStorage.getItem('sdis74_users');
+            if (!users) {
+                users = [DEFAULT_ADMIN];
+                localStorage.setItem('sdis74_users', JSON.stringify(users));
+            } else {
+                users = JSON.parse(users);
+                // Sécurité pour s'assurer que l'admin est toujours là
+                if (!users.some(u => u.email === DEFAULT_ADMIN.email)) {
+                    users.push(DEFAULT_ADMIN);
+                    localStorage.setItem('sdis74_users', JSON.stringify(users));
+                }
+            }
+            return users;
+        }
+
+        // Gérer la connexion
+        function handleLogin(event) {
+            event.preventDefault();
+            const emailInput = document.getElementById('login-email').value.trim();
+            const passwordInput = document.getElementById('login-password').value;
+            const errorDiv = document.getElementById('login-error');
+
+            const users = getUsers();
+            const user = users.find(u => u.email === emailInput && u.password === passwordInput);
+
+            if (user) {
+                errorDiv.classList.add('hidden');
+                showDashboard(user);
+            } else {
+                errorDiv.classList.remove('hidden');
+            }
+        }
+
+        // Afficher l'interface appropriée selon le rôle
+        function showDashboard(user) {
+            document.getElementById('login-view').classList.add('hidden');
+            document.getElementById('navbar').classList.remove('hidden');
+            document.getElementById('user-display-name').innerText = `${user.prenom} ${user.nom}`;
+
+            if (user.isAdmin) {
+                document.getElementById('admin-view').classList.remove('hidden');
+                renderUsersTable();
+            } else {
+                document.getElementById('user-view').classList.remove('hidden');
+                document.getElementById('welcome-user').innerText = `Bonjour, ${user.prenom} ${user.nom} 🚒`;
+                document.getElementById('welcome-centre').innerText = `Affectation : Centre de Secours de ${user.centre}`;
+            }
+        }
+
+        // Déconnexion
+        function logout() {
+            document.getElementById('navbar').classList.add('hidden');
+            document.getElementById('admin-view').classList.add('hidden');
+            document.getElementById('user-view').classList.add('hidden');
+            document.getElementById('login-view').classList.remove('hidden');
+            document.getElementById('login-email').value = '';
+            document.getElementById('login-password').value = '';
+        }
+
+        // Ajouter un nouvel utilisateur (Admin uniquement)
+        function createUser(event) {
+            event.preventDefault();
+            
+            const prenom = document.getElementById('new-prenom').value.trim();
+            const nom = document.getElementById('new-nom').value.trim();
+            const centre = document.getElementById('new-centre').value.trim();
+            const email = document.getElementById('new-email').value.trim();
+            const password = document.getElementById('new-password').value;
+
+            const users = getUsers();
+
+            // Vérifier si l'email existe déjà
+            if (users.some(u => u.email === email)) {
+                alert("Cette adresse email est déjà attribuée à un autre agent.");
+                return;
+            }
+
+            const newUser = { prenom, nom, centre, email, password, isAdmin: false };
+            users.push(newUser);
+            localStorage.setItem('sdis74_users', JSON.stringify(users));
+
+            // Réinitialiser le formulaire et rafraîchir le tableau
+            event.target.reset();
+            renderUsersTable();
+            alert(`Le compte de l'agent ${prenom} ${nom} a été créé avec succès !`);
+        }
+
+        // Rafraîchir l'affichage de la liste des utilisateurs
+        function renderUsersTable() {
+            const users = getUsers();
+            const tbody = document.getElementById('users-table-body');
+            tbody.innerHTML = '';
+
+            users.forEach(user => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-gray-50";
+                tr.innerHTML = `
+                    <td class="p-3 font-medium text-gray-900">${user.prenom} ${user.nom} ${user.isAdmin ? '👑' : ''}</td>
+                    <td class="p-3 text-gray-600">${user.centre}</td>
+                    <td class="p-3 text-gray-600 font-mono text-xs">${user.email}</td>
+                    <td class="p-3 text-gray-400 font-mono text-xs">${user.password}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+    </script>
+</body>
+</html>
